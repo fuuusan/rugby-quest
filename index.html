@@ -1,0 +1,2155 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🏉 ラグビー練習メニュー自動生成</title>
+  <style>
+    /* ============================================================
+       リセット & ベース
+    ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      background: #f0f4f8;
+      color: #1a2433;
+      min-height: 100vh;
+    }
+
+    /* ============================================================
+       ヘッダー
+    ============================================================ */
+    .header {
+      background: linear-gradient(135deg, #0d2640 0%, #1a3a5c 60%, #1e4976 100%);
+      color: white;
+      padding: 20px 20px 0;
+      text-align: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+
+    .header-inner {
+      max-width: 800px;
+      margin: 0 auto;
+      padding-bottom: 16px;
+    }
+
+    .header h1 {
+      font-size: 1.75rem;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+    }
+
+    .header p {
+      font-size: 0.82rem;
+      opacity: 0.75;
+      margin-top: 5px;
+    }
+
+    /* ============================================================
+       タブ
+    ============================================================ */
+    .tabs {
+      display: flex;
+      background: #0a1f36;
+      padding: 0 20px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      max-width: 220px;
+      padding: 12px 8px;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      color: rgba(255,255,255,0.55);
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.2px;
+    }
+
+    .tab-btn.active {
+      color: white;
+      border-bottom-color: #2ecc71;
+    }
+
+    .tab-btn:hover:not(.active) {
+      color: rgba(255,255,255,0.8);
+    }
+
+    /* ============================================================
+       メインコンテナ
+    ============================================================ */
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 24px 16px;
+    }
+
+    /* ============================================================
+       パネル切り替え
+    ============================================================ */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* ============================================================
+       カード
+    ============================================================ */
+    .card {
+      background: white;
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+      border: 1px solid #e8edf3;
+    }
+
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #1a3a5c;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ============================================================
+       フォーム部品
+    ============================================================ */
+    .form-group { margin-bottom: 20px; }
+
+    .form-label {
+      display: block;
+      font-size: 0.83rem;
+      font-weight: 700;
+      color: #4a5568;
+      margin-bottom: 9px;
+      letter-spacing: 0.3px;
+    }
+
+    /* チェックボックス（タグUI） */
+    .checkbox-group, .radio-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .checkbox-item, .radio-item { display: none; }
+
+    .checkbox-label, .radio-label {
+      display: inline-block;
+      padding: 8px 15px;
+      border: 2px solid #e2e8f0;
+      border-radius: 22px;
+      cursor: pointer;
+      font-size: 0.83rem;
+      font-weight: 600;
+      transition: all 0.18s;
+      color: #4a5568;
+      user-select: none;
+    }
+
+    .checkbox-item:checked + .checkbox-label {
+      background: #1a3a5c;
+      border-color: #1a3a5c;
+      color: white;
+    }
+
+    .radio-item:checked + .radio-label {
+      background: #2e7d32;
+      border-color: #2e7d32;
+      color: white;
+    }
+
+    .checkbox-label:hover:not(.checked),
+    .radio-label:hover {
+      border-color: #94a3b8;
+      background: #f8fafc;
+    }
+
+    /* テキスト入力 */
+    .text-input, .form-select, .form-textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 2px solid #e2e8f0;
+      border-radius: 9px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.18s;
+      background: white;
+      color: #1a2433;
+    }
+
+    .text-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: #1a3a5c;
+      box-shadow: 0 0 0 3px rgba(26,58,92,0.08);
+    }
+
+    .form-select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7'%3E%3Cpath d='M0 0l6 7 6-7z' fill='%234a5568'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+      cursor: pointer;
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    /* ============================================================
+       生成ボタン
+    ============================================================ */
+    .btn-generate {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #1a3a5c 0%, #2a5a8c 100%);
+      color: white;
+      border: none;
+      border-radius: 11px;
+      font-size: 1.05rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 14px rgba(26,58,92,0.25);
+    }
+
+    .btn-generate:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(26,58,92,0.35);
+    }
+
+    .btn-generate:active { transform: translateY(0); }
+
+    /* ============================================================
+       結果エリア
+    ============================================================ */
+    .results-section { display: none; }
+    .results-section.visible { display: block; }
+
+    /* サマリーバー */
+    .summary-bar {
+      background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
+      color: white;
+      padding: 18px 22px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      box-shadow: 0 4px 14px rgba(46,125,50,0.3);
+    }
+
+    .summary-bar .total-time {
+      font-size: 2rem;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .summary-bar .total-time span {
+      font-size: 1rem;
+      opacity: 0.7;
+    }
+
+    .summary-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 5px;
+    }
+
+    .summary-chip {
+      font-size: 0.78rem;
+      background: rgba(255,255,255,0.2);
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    /* セクションヘッダー */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 26px 0 12px;
+    }
+
+    .section-badge {
+      padding: 5px 14px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    .section-badge.warmup  { background: #fff3cd; color: #92600a; }
+    .section-badge.main    { background: #d1e7dd; color: #0c5930; }
+    .section-badge.cooldown{ background: #cff4fc; color: #0a4f6e; }
+
+    .section-line {
+      flex: 1;
+      height: 1px;
+      background: #e2e8f0;
+    }
+
+    .section-time {
+      font-size: 0.78rem;
+      color: #94a3b8;
+      white-space: nowrap;
+    }
+
+    /* ============================================================
+       メニューカード
+    ============================================================ */
+    .menu-card {
+      background: white;
+      border-radius: 13px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      border: 1px solid #e8edf3;
+      overflow: hidden;
+      transition: box-shadow 0.2s;
+    }
+
+    .menu-card:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    }
+
+    .menu-card-header {
+      padding: 15px 20px;
+      background: #f8fafc;
+      border-bottom: 1px solid #e8edf3;
+    }
+
+    .menu-card-title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #1a3a5c;
+      margin-bottom: 8px;
+    }
+
+    .menu-card-meta {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .meta-tag {
+      font-size: 0.73rem;
+      padding: 3px 9px;
+      border-radius: 5px;
+      font-weight: 700;
+    }
+
+    .meta-tag.category      { background: #e8f0fe; color: #1a3a5c; }
+    .meta-tag.intensity-low { background: #dcfce7; color: #166534; }
+    .meta-tag.intensity-mid { background: #fef9c3; color: #854d0e; }
+    .meta-tag.intensity-high{ background: #fee2e2; color: #991b1b; }
+    .meta-tag.level         { background: #f3e8ff; color: #6b21a8; }
+    .meta-tag.duration      { background: #e0f2fe; color: #0c4a6e; }
+
+    .menu-card-body { padding: 18px 20px; }
+
+    .menu-description {
+      font-size: 0.875rem;
+      color: #4a5568;
+      line-height: 1.65;
+      margin-bottom: 15px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+
+    .info-item .label {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      margin-bottom: 3px;
+    }
+
+    .info-item .value {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #1a2433;
+    }
+
+    /* 道具タグ */
+    .equipment-section { margin-bottom: 16px; }
+
+    .equipment-label {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      margin-bottom: 7px;
+    }
+
+    .equipment-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .equipment-tag {
+      font-size: 0.75rem;
+      padding: 4px 11px;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      color: #4a5568;
+      font-weight: 600;
+    }
+
+    /* 動画セクション */
+    .video-section {
+      border-top: 1px solid #f0f4f8;
+      padding-top: 15px;
+    }
+
+    .video-label {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      margin-bottom: 9px;
+    }
+
+    .video-embed {
+      position: relative;
+      padding-bottom: 56.25%;
+      height: 0;
+      overflow: hidden;
+      border-radius: 9px;
+      background: #000;
+    }
+
+    .video-embed iframe {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      border: none;
+    }
+
+    .btn-video {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 18px;
+      background: #cc0000;
+      color: white;
+      border: none;
+      border-radius: 7px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.18s;
+    }
+
+    .btn-video:hover { background: #aa0000; }
+
+    .toggle-video-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 13px;
+      background: none;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 7px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #4a5568;
+      cursor: pointer;
+      margin-bottom: 9px;
+      transition: all 0.18s;
+    }
+
+    .toggle-video-btn:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+    }
+
+    /* ============================================================
+       タイムライン
+    ============================================================ */
+    .timeline-card {
+      background: white;
+      border-radius: 13px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+      border: 1px solid #e8edf3;
+    }
+
+    .timeline-title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #1a3a5c;
+      margin-bottom: 18px;
+    }
+
+    .timeline-row {
+      display: flex;
+      gap: 14px;
+      position: relative;
+    }
+
+    .timeline-left {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 48px;
+      flex-shrink: 0;
+    }
+
+    .timeline-time-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #1a3a5c;
+      margin-bottom: 4px;
+      white-space: nowrap;
+    }
+
+    .timeline-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .timeline-vline {
+      width: 2px;
+      flex: 1;
+      background: #e2e8f0;
+      min-height: 18px;
+    }
+
+    .timeline-content-row {
+      flex: 1;
+      padding-bottom: 16px;
+    }
+
+    .timeline-menu-name {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #1a2433;
+    }
+
+    .timeline-menu-sub {
+      font-size: 0.76rem;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+
+    .timeline-end {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .timeline-end-label {
+      font-size: 0.82rem;
+      color: #6b7280;
+      font-weight: 700;
+    }
+
+    /* ============================================================
+       参考動画セクション
+    ============================================================ */
+    .ref-video-section {
+      background: white;
+      border-radius: 13px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+      border: 1px solid #e8edf3;
+    }
+
+    .ref-video-title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #1a3a5c;
+      margin-bottom: 14px;
+    }
+
+    .ref-video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+    }
+
+    .ref-video-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 9px;
+      text-decoration: none;
+      transition: all 0.18s;
+    }
+
+    .ref-video-item:hover {
+      background: #eef2f7;
+      border-color: #94a3b8;
+    }
+
+    .ref-video-item-label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #1a3a5c;
+    }
+
+    .ref-video-item-icon {
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    /* ============================================================
+       管理者パネル
+    ============================================================ */
+    .admin-login-wrap {
+      background: white;
+      border-radius: 14px;
+      padding: 36px 28px;
+      max-width: 380px;
+      margin: 0 auto;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+      border: 1px solid #e8edf3;
+      text-align: center;
+    }
+
+    .admin-login-icon {
+      font-size: 2.4rem;
+      margin-bottom: 12px;
+    }
+
+    .admin-login-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #1a3a5c;
+      margin-bottom: 20px;
+    }
+
+    .admin-login-hint {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      margin-top: 14px;
+    }
+
+    /* 管理者メニューアイテム */
+    .admin-menu-item {
+      background: white;
+      border: 1px solid #e8edf3;
+      border-radius: 10px;
+      padding: 13px 16px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      transition: box-shadow 0.18s;
+    }
+
+    .admin-menu-item:hover {
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .admin-menu-info { flex: 1; min-width: 0; }
+
+    .admin-menu-name {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #1a2433;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .admin-menu-meta {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      margin-top: 3px;
+    }
+
+    .admin-menu-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+    /* ============================================================
+       ボタン
+    ============================================================ */
+    .btn-edit {
+      padding: 6px 12px;
+      background: #e8f0fe;
+      color: #1a3a5c;
+      border: none;
+      border-radius: 7px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.18s;
+    }
+    .btn-edit:hover { background: #d1e0fc; }
+
+    .btn-delete {
+      padding: 6px 12px;
+      background: #fee2e2;
+      color: #991b1b;
+      border: none;
+      border-radius: 7px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.18s;
+    }
+    .btn-delete:hover { background: #fecaca; }
+
+    .btn-primary {
+      padding: 11px 20px;
+      background: #1a3a5c;
+      color: white;
+      border: none;
+      border-radius: 9px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.18s;
+    }
+    .btn-primary:hover { background: #0d2640; }
+
+    .btn-secondary {
+      padding: 11px 20px;
+      background: #f1f5f9;
+      color: #4a5568;
+      border: none;
+      border-radius: 9px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.18s;
+    }
+    .btn-secondary:hover { background: #e2e8f0; }
+
+    .btn-success {
+      padding: 11px 20px;
+      background: #2e7d32;
+      color: white;
+      border: none;
+      border-radius: 9px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.18s;
+    }
+    .btn-success:hover { background: #1b5e20; }
+
+    .btn-danger {
+      padding: 11px 20px;
+      background: #dc2626;
+      color: white;
+      border: none;
+      border-radius: 9px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* ============================================================
+       モーダル
+    ============================================================ */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 200;
+      overflow-y: auto;
+      padding: 20px;
+    }
+    .modal-overlay.visible {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+    }
+
+    .modal {
+      background: white;
+      border-radius: 14px;
+      padding: 26px;
+      max-width: 620px;
+      width: 100%;
+      margin: auto;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 22px;
+    }
+
+    .modal-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #1a3a5c;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.6rem;
+      cursor: pointer;
+      color: #94a3b8;
+      line-height: 1;
+      padding: 0 4px;
+      transition: color 0.18s;
+    }
+    .modal-close:hover { color: #4a5568; }
+
+    /* ============================================================
+       検索バー
+    ============================================================ */
+    .search-bar { margin-bottom: 14px; }
+
+    .search-input {
+      width: 100%;
+      padding: 10px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 9px;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.18s;
+    }
+    .search-input:focus { border-color: #1a3a5c; }
+
+    /* ============================================================
+       空状態
+    ============================================================ */
+    .empty-state {
+      text-align: center;
+      padding: 36px 20px;
+      color: #94a3b8;
+    }
+    .empty-state .icon { font-size: 2.5rem; margin-bottom: 12px; }
+    .empty-state p { font-size: 0.9rem; line-height: 1.6; }
+
+    /* ============================================================
+       トースト
+    ============================================================ */
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateX(-50%) translateY(16px); }
+      to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1a3a5c;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 9px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      z-index: 999;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+      animation: toastIn 0.25s ease;
+      white-space: nowrap;
+    }
+
+    /* ============================================================
+       管理者ヘッダー
+    ============================================================ */
+    .admin-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .admin-top-bar h2 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #1a3a5c;
+    }
+
+    .admin-top-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* ============================================================
+       レスポンシブ
+    ============================================================ */
+    @media (max-width: 520px) {
+      .header h1 { font-size: 1.35rem; }
+      .form-row   { grid-template-columns: 1fr; }
+      .info-grid  { grid-template-columns: 1fr; }
+      .container  { padding: 16px 12px; }
+      .card       { padding: 18px 16px; }
+      .modal      { padding: 20px 16px; }
+      .summary-bar .total-time { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============================================================
+       ヘッダー
+  ============================================================ -->
+  <div class="header">
+    <div class="header-inner">
+      <h1>🏉 ラグビー練習メニュー自動生成</h1>
+      <p>コーチが3クリックで今日の動画付き練習メニューを作成</p>
+    </div>
+  </div>
+
+  <!-- タブ -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('coach', this)">👟 コーチ画面</button>
+    <button class="tab-btn" onclick="switchTab('admin', this)">⚙️ 管理者画面</button>
+  </div>
+
+  <!-- ============================================================
+       コーチ画面
+  ============================================================ -->
+  <div id="panel-coach" class="panel active">
+    <div class="container">
+
+      <!-- 入力フォーム -->
+      <div class="card" id="input-card">
+        <div class="card-title">📋 練習条件を入力</div>
+
+        <!-- ジャンル -->
+        <div class="form-group">
+          <label class="form-label">スキルジャンル（複数選択可）</label>
+          <div class="checkbox-group">
+            <input type="checkbox" class="checkbox-item genre-cb" id="g-attack"    value="アタック">
+            <label class="checkbox-label" for="g-attack">⚔️ アタック</label>
+
+            <input type="checkbox" class="checkbox-item genre-cb" id="g-defense"   value="ディフェンス">
+            <label class="checkbox-label" for="g-defense">🛡️ ディフェンス</label>
+
+            <input type="checkbox" class="checkbox-item genre-cb" id="g-breakdown" value="プレイブレイクダウン">
+            <label class="checkbox-label" for="g-breakdown">💪 ブレイクダウン</label>
+
+            <input type="checkbox" class="checkbox-item genre-cb" id="g-kick"      value="キック">
+            <label class="checkbox-label" for="g-kick">🦶 キック</label>
+
+            <input type="checkbox" class="checkbox-item" id="g-all" value="all">
+            <label class="checkbox-label" for="g-all">🎯 すべて</label>
+          </div>
+        </div>
+
+        <!-- 強度 -->
+        <div class="form-group">
+          <label class="form-label">練習強度</label>
+          <div class="radio-group">
+            <input type="radio" class="radio-item" name="intensity" id="i-low"  value="低">
+            <label class="radio-label" for="i-low">🟢 低</label>
+
+            <input type="radio" class="radio-item" name="intensity" id="i-mid"  value="中" checked>
+            <label class="radio-label" for="i-mid">🟡 中</label>
+
+            <input type="radio" class="radio-item" name="intensity" id="i-high" value="高">
+            <label class="radio-label" for="i-high">🔴 高</label>
+          </div>
+        </div>
+
+        <!-- 練習時間 -->
+        <div class="form-group">
+          <label class="form-label">練習時間</label>
+          <div class="radio-group">
+            <input type="radio" class="radio-item" name="duration" id="d-30"  value="30">
+            <label class="radio-label" for="d-30">30分</label>
+
+            <input type="radio" class="radio-item" name="duration" id="d-60"  value="60" checked>
+            <label class="radio-label" for="d-60">60分</label>
+
+            <input type="radio" class="radio-item" name="duration" id="d-90"  value="90">
+            <label class="radio-label" for="d-90">90分</label>
+
+            <input type="radio" class="radio-item" name="duration" id="d-120" value="120">
+            <label class="radio-label" for="d-120">120分</label>
+          </div>
+        </div>
+
+        <!-- レベル -->
+        <div class="form-group">
+          <label class="form-label">対象レベル</label>
+          <div class="radio-group">
+            <input type="radio" class="radio-item" name="level" id="l-beg" value="初心者">
+            <label class="radio-label" for="l-beg">🌱 初心者</label>
+
+            <input type="radio" class="radio-item" name="level" id="l-int" value="中級者" checked>
+            <label class="radio-label" for="l-int">🌿 中級者</label>
+
+            <input type="radio" class="radio-item" name="level" id="l-adv" value="上級者">
+            <label class="radio-label" for="l-adv">🌳 上級者</label>
+          </div>
+        </div>
+
+        <!-- 人数 -->
+        <div class="form-group">
+          <label class="form-label">人数（任意）</label>
+          <input type="number" class="text-input" id="players-input"
+                 placeholder="例：15" min="1" max="100" style="max-width:200px;">
+        </div>
+
+        <button class="btn-generate" onclick="generateMenu()">
+          🏉 練習メニューを生成する
+        </button>
+      </div>
+
+      <!-- ============================================================
+           結果エリア
+      ============================================================ -->
+      <div class="results-section" id="results-section">
+
+        <!-- サマリー -->
+        <div class="summary-bar" id="summary-bar"></div>
+
+        <!-- タイムライン -->
+        <div class="timeline-card">
+          <div class="timeline-title">📅 タイムライン</div>
+          <div id="timeline-content"></div>
+        </div>
+
+        <!-- メニューカード群 -->
+        <div id="menu-results"></div>
+
+        <!-- カテゴリ別参考動画 -->
+        <div class="ref-video-section" id="ref-video-section"></div>
+
+        <!-- 再生成ボタン -->
+        <button class="btn-generate" onclick="generateMenu()" style="margin-bottom:32px;">
+          🔄 もう一度生成する
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================
+       管理者画面
+  ============================================================ -->
+  <div id="panel-admin" class="panel">
+    <div class="container">
+
+      <!-- ログイン -->
+      <div id="admin-login-section">
+        <div class="admin-login-wrap">
+          <div class="admin-login-icon">🔐</div>
+          <div class="admin-login-title">管理者ログイン</div>
+          <div class="form-group">
+            <input type="password" class="text-input" id="admin-password"
+                   placeholder="パスワードを入力"
+                   onkeydown="if(event.key==='Enter') adminLogin()">
+          </div>
+          <button class="btn-primary" onclick="adminLogin()" style="width:100%">ログイン</button>
+          <p class="admin-login-hint">デフォルトパスワード: <strong>admin</strong></p>
+        </div>
+      </div>
+
+      <!-- 管理コンテンツ -->
+      <div id="admin-content" style="display:none">
+
+        <div class="admin-top-bar">
+          <h2>📁 練習メニュー管理</h2>
+          <div class="admin-top-actions">
+            <button class="btn-success" onclick="openAddModal()">＋ 新規追加</button>
+            <button class="btn-secondary" onclick="resetToInitial()">↩ 初期データ復元</button>
+            <button class="btn-secondary" onclick="adminLogout()">ログアウト</button>
+          </div>
+        </div>
+
+        <div class="search-bar">
+          <input type="text" class="search-input" id="admin-search"
+                 placeholder="メニュー名・カテゴリで検索..."
+                 oninput="renderAdminList()">
+        </div>
+
+        <div id="admin-menu-list"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================
+       追加・編集モーダル
+  ============================================================ -->
+  <div class="modal-overlay" id="menu-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="modal-title">新規メニュー追加</span>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">メニュー名 *</label>
+          <input type="text" class="text-input" id="f-name" placeholder="例：3対2パス">
+        </div>
+        <div class="form-group">
+          <label class="form-label">ジャンル *</label>
+          <select class="form-select" id="f-category">
+            <option value="アタック">アタック</option>
+            <option value="ディフェンス">ディフェンス</option>
+            <option value="プレイブレイクダウン">プレイブレイクダウン</option>
+            <option value="キック">キック</option>
+            <option value="フィジカル">フィジカル</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">強度 *</label>
+          <select class="form-select" id="f-intensity">
+            <option value="低">低</option>
+            <option value="中">中</option>
+            <option value="高">高</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">時間（分） *</label>
+          <input type="number" class="text-input" id="f-duration" placeholder="例：15" min="1" max="120">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">対象レベル *</label>
+          <select class="form-select" id="f-level">
+            <option value="初心者">初心者</option>
+            <option value="中級者">中級者</option>
+            <option value="上級者">上級者</option>
+            <option value="全レベル">全レベル</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">セクション *</label>
+          <select class="form-select" id="f-section">
+            <option value="ウォームアップ">ウォームアップ</option>
+            <option value="メイン">メイン</option>
+            <option value="クールダウン">クールダウン</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">必要人数</label>
+          <input type="text" class="text-input" id="f-players" placeholder="例：6〜10人">
+        </div>
+        <div class="form-group">
+          <label class="form-label">サブカテゴリ</label>
+          <input type="text" class="text-input" id="f-subcategory" placeholder="例：パス / タックル">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">説明</label>
+        <textarea class="form-textarea" id="f-description" placeholder="練習の内容・ポイントを入力..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">必要な道具（カンマ区切り）</label>
+        <input type="text" class="text-input" id="f-equipment" placeholder="例：ボール, コーン, ビブス">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">動画URL（YouTube）</label>
+        <input type="text" class="text-input" id="f-video-url"
+               placeholder="https://www.youtube.com/watch?v=...">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">動画の種類</label>
+        <select class="form-select" id="f-video-type">
+          <option value="single">単体動画</option>
+          <option value="playlist">プレイリスト</option>
+        </select>
+      </div>
+
+      <div style="display:flex; gap:10px; margin-top:22px;">
+        <button class="btn-success" onclick="saveMenu()" style="flex:1">💾 保存する</button>
+        <button class="btn-secondary" onclick="closeModal()">キャンセル</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       JavaScript
+  ============================================================ -->
+  <script>
+    'use strict';
+
+    /* ==========================================================
+       初期データ（20件）
+    ========================================================== */
+    const ATTACK_PL  = 'https://youtube.com/playlist?list=PLz7znJaHbTxvuvjJSgl_WX2YlIQR_e6xM&si=eYofbQE7PSyIo1F-';
+    const BRKDWN_PL  = 'https://youtube.com/playlist?list=PLz7znJaHbTxsspbNien_XvvsyB8x64BiH&si=Ors8bmf_n65pzwTg';
+
+    const INITIAL_MENUS = [
+      // ── ウォームアップ ──────────────────────────────────────
+      {
+        id: 1,
+        menu_name: 'ダイナミックウォームアップ',
+        category: 'フィジカル',
+        sub_category: 'ウォームアップ',
+        intensity: '低',
+        duration: 10,
+        level: '全レベル',
+        section: 'ウォームアップ',
+        description: 'ジョギング・スキップ・サイドステップ・ハイニー等の動的ストレッチを組み合わせたウォームアップ。怪我予防と体の覚醒が目的。全員で統一したリズムで動くことで一体感を醸成する。',
+        players: '制限なし',
+        equipment: ['コーン'],
+        video_url: ATTACK_PL,
+        video_type: 'playlist'
+      },
+      {
+        id: 2,
+        menu_name: 'ボールハンドリングウォームアップ',
+        category: 'アタック',
+        sub_category: 'ウォームアップ',
+        intensity: '低',
+        duration: 8,
+        level: '全レベル',
+        section: 'ウォームアップ',
+        description: 'ペアを組んで立った状態でボールを使った基本的なパスとキャッチを行う。手首強化と手先の感覚を高め、セッション全体に向けて集中力を整える。',
+        players: '2人〜（ペア）',
+        equipment: ['ボール'],
+        video_url: ATTACK_PL,
+        video_type: 'playlist'
+      },
+      {
+        id: 3,
+        menu_name: 'コンタクトウォームアップ',
+        category: 'フィジカル',
+        sub_category: 'ウォームアップ',
+        intensity: '低',
+        duration: 8,
+        level: '全レベル',
+        section: 'ウォームアップ',
+        description: '軽いコンタクトを入れながら体を温めるウォームアップ。タックルバッグへの低強度ヒット・ショルダーチャージを丁寧に行い、コンタクトへの恐怖心を和らげる。',
+        players: '制限なし',
+        equipment: ['タックルバッグ'],
+        video_url: ATTACK_PL,
+        video_type: 'playlist'
+      },
+
+      // ── アタック（メイン）──────────────────────────────────
+      {
+        id: 4,
+        menu_name: '2対1コンビネーション',
+        category: 'アタック',
+        sub_category: 'コンビネーション',
+        intensity: '中',
+        duration: 12,
+        level: '初心者',
+        section: 'メイン',
+        description: '基本的な2対1の状況を繰り返し作り出し、パスかキャリーかを判断する練習。シンプルな形式で初心者でも取り組みやすく、決断力と視野の広さを養う。',
+        players: '6人〜',
+        equipment: ['ボール', 'コーン'],
+        video_url: ATTACK_PL,
+        video_type: 'playlist'
+      },
+      {
+        id: 5,
+        menu_name: '3対2パス',
+        category: 'アタック',
+        sub_category: 'パス',
+        intensity: '中',
+        duration: 15,
+        level: '中級者',
+        section: 'メイン',
+        description: '数的優位の状況で素早い判断とパス精度を高める練習。アタック側3人がディフェンス2人を突破する形式で、ボールを持たない選手のラインの取り方も同時に鍛える。',
+        players: '6〜10人',
+        equipment: ['ボール', 'コーン', 'ビブス'],
+        video_url: ATTACK_PL,
+        video_type: 'playlist'
+      },
+      {
+        id: 6,
+        menu_name: 'アタックパターン練習',
+        category: 'アタック',
+        sub_category: 'パターンプレー',
+        intensity: '高',
+        duration: 25,
+        level: '上級者',
+        section: 'メイン',
+        description: 'チームのアタックパターン（セットプレー後のムーブ）を試合形式に近い状況で繰り返し練習。コールへの反応・コンビネーション・サポートランの精度を高める。',
+        players: '10〜15人',
+        equipment: ['ボール', 'コーン', 'タックルバッグ', 'ビブス'],
+        video_url: ATTACK_PL,
+        video_type: 'playlist'
+      },
+      {
+        id: 7,
+        menu_name: 'カウンターアタック練習',
+        category: 'アタック',
+        sub_category: 'カウンター',
+        intensity: '高',
+        duration: 20,
+        level: '上級者',
+        section: 'メイン',
+        description: '相手のキックやターンオーバー後の素早いカウンターアタックを実践的に練習。スピードと判断力が問われ、試合における最大のチャンスを仕留める力を養う。',
+        players: '10〜15人',
+        equipment: ['ボール', 'コーン', 'ビブス'],
+        video_url: ATTACK_PL,
+        video_type: 'playlist'
+      },
+      {
+        id: 8,
+        menu_name: 'ラインアウトムーブ',
+        category: 'アタック',
+        sub_category: 'セットプレー',
+        intensity: '高',
+        duration: 20,
+        level: '上級者',
+        section: 'メイン',
+        description: 'ラインアウトからの多彩なアタックムーブを実践練習。各ポジションの役割と連携・タイミングを重点的に鍛え、セットピースを得点源にする。',
+        players: '10〜15人',
+        equipment: ['ボール', 'コーン', 'ビブス'],
+        video_url: ATTACK_PL,
+        video_type: 'playlist'
+      },
+
+      // ── ディフェンス（メイン）────────────────────────────
+      {
+        id: 9,
+        menu_name: 'タックル基礎練習',
+        category: 'ディフェンス',
+        sub_category: 'タックル',
+        intensity: '中',
+        duration: 15,
+        level: '初心者',
+        section: 'メイン',
+        description: '安全なタックルフォームを段階的に習得する練習。静止した状態から始め、徐々に動く相手へと難易度を上げ、正しい姿勢・アプローチ・ヒットを身体で覚える。',
+        players: '2人〜（ペア）',
+        equipment: ['タックルバッグ', 'マーカー'],
+        video_url: ATTACK_PL,
+        video_type: 'playlist'
+      },
+      {
+        id: 10,
+        menu_name: 'ポジショニング確認',
+        category: 'ディフェンス',
+        sub_category: 'ポジショニング',
+        intensity: '低',
+        duration: 12,
+        level: '初心者',
+        section: 'メイン',
+        description: 'ディフェンスの基本的なポジショニングをウォーキングペースで確認する練習。コーチの声がけを交えながら理解を深め、全員の意識を統一する。',
+        players: '6人〜',
+        equipment: ['コーン', 'マーカー'],
+        video_url: ATTACK_PL,
+        video_type: 'playlist'
+      },
+      {
+        id: 11,
+        menu_name: 'ラインスピードディフェンス',
+        category: 'ディフェンス',
+        sub_category: 'ラインディフェンス',
+        intensity: '高',
+        duration: 20,
+        level: '中級者',
+        section: 'メイン',
+        description: 'ディフェンスラインの上がりスピードと間隔の維持を重点的に練習。コミュニケーションと連動したリードにより、相手アタックを圧迫するアグレッシブなディフェンスを構築する。',
+        players: '8〜12人',
+        equipment: ['ボール', 'コーン', 'ビブス'],
+        video_url: ATTACK_PL,
+        video_type: 'playlist'
+      },
+      {
+        id: 12,
+        menu_name: 'チームディフェンスシステム',
+        category: 'ディフェンス',
+        sub_category: 'システム',
+        intensity: '高',
+        duration: 25,
+        level: '上級者',
+        section: 'メイン',
+        description: 'チーム全体のディフェンスシステム（ブリッツ/フラット/ドリフト）を状況に応じて切り替える高度な練習。コールと判断の精度を上げ、組織的なディフェンスを完成させる。',
+        players: '10〜15人',
+        equipment: ['ボール', 'コーン', 'ビブス'],
+        video_url: ATTACK_PL,
+        video_type: 'playlist'
+      },
+
+      // ── プレイブレイクダウン（メイン）───────────────────
+      {
+        id: 13,
+        menu_name: 'ブレイクダウン基礎',
+        category: 'プレイブレイクダウン',
+        sub_category: '基礎',
+        intensity: '中',
+        duration: 15,
+        level: '初心者',
+        section: 'メイン',
+        description: 'コンタクト後のブレイクダウンの基本を学ぶ練習。正しい倒れ方・ボールの置き方・サポートの入り方を段階的に習得し、ラックの優位性を確立する土台を作る。',
+        players: '4〜6人',
+        equipment: ['ボール', 'タックルバッグ'],
+        video_url: BRKDWN_PL,
+        video_type: 'playlist'
+      },
+      {
+        id: 14,
+        menu_name: 'ラック形成練習',
+        category: 'プレイブレイクダウン',
+        sub_category: 'ラック',
+        intensity: '中',
+        duration: 15,
+        level: '中級者',
+        section: 'メイン',
+        description: 'コンタクト後のラック形成を素早く行う練習。キャリアーのボールポジションとサポートの寄りの速度を重点的に鍛える。チームのブレイクダウンスピードを劇的に改善する。',
+        players: '6〜10人',
+        equipment: ['ボール', 'コーン', 'タックルバッグ'],
+        video_url: BRKDWN_PL,
+        video_type: 'playlist'
+      },
+      {
+        id: 15,
+        menu_name: 'モールドライブ練習',
+        category: 'プレイブレイクダウン',
+        sub_category: 'モール',
+        intensity: '高',
+        duration: 18,
+        level: '中級者',
+        section: 'メイン',
+        description: 'モール形成からのドライブを集中的に練習。体の低さ・結合力・ドライブ方向の統一を全員が意識し、ゴール前での強力な攻撃オプションを身につける。',
+        players: '8人〜',
+        equipment: ['ボール', 'タックルバッグ'],
+        video_url: BRKDWN_PL,
+        video_type: 'playlist'
+      },
+      {
+        id: 16,
+        menu_name: 'スクラム基礎練習',
+        category: 'プレイブレイクダウン',
+        sub_category: 'スクラム',
+        intensity: '高',
+        duration: 20,
+        level: '中級者',
+        section: 'メイン',
+        description: 'スクラムのバインディングとヒットの基礎を反復練習。フロントロー中心にパック全体の連携とドライブ力を向上させ、セットプレーの安定性を高める。',
+        players: '8人〜',
+        equipment: ['スクラムマシン'],
+        video_url: BRKDWN_PL,
+        video_type: 'playlist'
+      },
+      {
+        id: 17,
+        menu_name: 'ジャッカル対策練習',
+        category: 'プレイブレイクダウン',
+        sub_category: 'ジャッカル',
+        intensity: '高',
+        duration: 18,
+        level: '上級者',
+        section: 'メイン',
+        description: 'ジャッカルの仕掛けと対策を攻守両面から練習。ボールキャリアーのセキュリティとジャッカラーのタイミング・姿勢を高強度で競い合う。',
+        players: '4〜8人',
+        equipment: ['ボール', 'タックルバッグ', 'マーカー'],
+        video_url: BRKDWN_PL,
+        video_type: 'playlist'
+      },
+
+      // ── キック（メイン）──────────────────────────────────
+      {
+        id: 18,
+        menu_name: 'キックチェイス練習',
+        category: 'キック',
+        sub_category: 'キッキングゲーム',
+        intensity: '中',
+        duration: 15,
+        level: '中級者',
+        section: 'メイン',
+        description: '蹴り手と追走者の連携を高める練習。キックの精度とチェイスのタイミング・ポジションを同時に練習し、試合で有効なキッキングゲームを構築する。',
+        players: '6〜10人',
+        equipment: ['ボール', 'コーン'],
+        video_url: ATTACK_PL,
+        video_type: 'playlist'
+      },
+
+      // ── クールダウン ──────────────────────────────────────
+      {
+        id: 19,
+        menu_name: 'スタティックストレッチ',
+        category: 'フィジカル',
+        sub_category: 'クールダウン',
+        intensity: '低',
+        duration: 10,
+        level: '全レベル',
+        section: 'クールダウン',
+        description: '練習後の疲労回復のための静的ストレッチ。全身の主要筋群（大腿四頭筋・ハムストリング・股関節・肩・首）を丁寧にほぐし、翌日のコンディションを整える。',
+        players: '制限なし',
+        equipment: [],
+        video_url: '',
+        video_type: 'single'
+      },
+      {
+        id: 20,
+        menu_name: 'チームミーティング＆振り返り',
+        category: 'フィジカル',
+        sub_category: 'クールダウン',
+        intensity: '低',
+        duration: 8,
+        level: '全レベル',
+        section: 'クールダウン',
+        description: '練習の振り返りと良かった点・改善点を全員で共有する。選手が発言しやすい雰囲気で進め、次回の練習への意欲を高める。チームの団結力向上にも繋がる。',
+        players: '制限なし',
+        equipment: [],
+        video_url: '',
+        video_type: 'single'
+      }
+    ];
+
+    /* ==========================================================
+       参考動画リンク（カテゴリ別）
+    ========================================================== */
+    const CATEGORY_VIDEOS = [
+      { label: '⚔️ アタック',          url: ATTACK_PL },
+      { label: '🛡️ ディフェンス',       url: ATTACK_PL },
+      { label: '💪 プレイブレイクダウン', url: BRKDWN_PL }
+    ];
+
+    /* ==========================================================
+       データ管理
+    ========================================================== */
+    let menus = [];
+    let editingId = null;
+    let isAdminLoggedIn = false;
+
+    /** LocalStorage からデータ読み込み */
+    function loadMenus() {
+      try {
+        const saved = localStorage.getItem('rugby_menus_v2');
+        menus = saved ? JSON.parse(saved) : [...INITIAL_MENUS];
+      } catch(e) {
+        menus = [...INITIAL_MENUS];
+      }
+    }
+
+    /** LocalStorage に保存 */
+    function saveMenus() {
+      localStorage.setItem('rugby_menus_v2', JSON.stringify(menus));
+    }
+
+    /** 次のIDを取得 */
+    function getNextId() {
+      return menus.length > 0 ? Math.max(...menus.map(m => m.id)) + 1 : 1;
+    }
+
+    /* ==========================================================
+       タブ切り替え
+    ========================================================== */
+    function switchTab(tab, el) {
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('panel-' + tab).classList.add('active');
+      el.classList.add('active');
+      if (tab === 'admin' && isAdminLoggedIn) renderAdminList();
+    }
+
+    /* ==========================================================
+       ジャンル「すべて」チェックボックス連動
+    ========================================================== */
+    document.getElementById('g-all').addEventListener('change', function() {
+      if (this.checked) {
+        document.querySelectorAll('.genre-cb').forEach(cb => cb.checked = false);
+      }
+    });
+    document.querySelectorAll('.genre-cb').forEach(cb => {
+      cb.addEventListener('change', function() {
+        if (this.checked) document.getElementById('g-all').checked = false;
+      });
+    });
+
+    /* ==========================================================
+       スコア計算
+    ========================================================== */
+    const INTENSITY_ORDER = ['低', '中', '高'];
+    const LEVEL_ORDER     = ['初心者', '中級者', '上級者'];
+
+    function scoreMenu(menu, selectedGenres, allGenres, selIntensity, selLevel) {
+      let score = 0;
+
+      // ジャンル一致（最大4点）
+      if (allGenres) {
+        score += 2; // 中立ボーナス
+      } else if (selectedGenres.includes(menu.category)) {
+        score += 4;
+      }
+
+      // 強度一致（最大3点）
+      const iDiff = Math.abs(INTENSITY_ORDER.indexOf(menu.intensity) - INTENSITY_ORDER.indexOf(selIntensity));
+      if (iDiff === 0) score += 3;
+      else if (iDiff === 1) score += 1;
+
+      // レベル一致（最大3点）
+      if (menu.level === '全レベル') {
+        score += 2;
+      } else if (menu.level === selLevel) {
+        score += 3;
+      } else {
+        const lDiff = Math.abs(LEVEL_ORDER.indexOf(menu.level) - LEVEL_ORDER.indexOf(selLevel));
+        if (lDiff === 1) score += 1;
+      }
+
+      return score;
+    }
+
+    /* ==========================================================
+       メニュー生成
+    ========================================================== */
+    function generateMenu() {
+      // ── 条件取得 ──
+      const selectedGenres = [];
+      document.querySelectorAll('.genre-cb:checked').forEach(cb => selectedGenres.push(cb.value));
+      const allGenres = document.getElementById('g-all').checked;
+
+      const intensity = document.querySelector('input[name="intensity"]:checked')?.value || '中';
+      const duration  = parseInt(document.querySelector('input[name="duration"]:checked')?.value || '60');
+      const level     = document.querySelector('input[name="level"]:checked')?.value || '中級者';
+
+      // バリデーション
+      if (!allGenres && selectedGenres.length === 0) {
+        alert('スキルジャンルを少なくとも1つ選択してください。');
+        return;
+      }
+
+      // ── 時間配分 ──
+      const warmupTarget   = Math.round(duration * 0.15);
+      const cooldownTarget = Math.round(duration * 0.12);
+      const mainTarget     = duration - warmupTarget - cooldownTarget;
+
+      // ── セクション別メニュー選択 ──
+      function selectSection(sectionName, timeLimit) {
+        const pool = menus
+          .filter(m => m.section === sectionName)
+          .map(m => ({ ...m, _score: scoreMenu(m, selectedGenres, allGenres, intensity, level) }))
+          .sort((a, b) => b._score - a._score);
+
+        const selected = [];
+        let usedTime   = 0;
+        const catCount = {};
+
+        for (const menu of pool) {
+          if (usedTime >= timeLimit) break;
+          if (usedTime + menu.duration > timeLimit) continue;
+
+          // メインは同カテゴリ2件まで（偏り防止）
+          const cc = catCount[menu.category] || 0;
+          if (sectionName === 'メイン' && cc >= 2) continue;
+
+          selected.push(menu);
+          usedTime += menu.duration;
+          catCount[menu.category] = cc + 1;
+        }
+        return selected;
+      }
+
+      let warmup   = selectSection('ウォームアップ', warmupTarget);
+      let main     = selectSection('メイン', mainTarget);
+      let cooldown = selectSection('クールダウン', cooldownTarget);
+
+      // フォールバック: ウォームアップが空の場合
+      if (warmup.length === 0) {
+        const fb = menus.filter(m => m.section === 'ウォームアップ');
+        if (fb.length > 0) warmup.push(fb[0]);
+      }
+
+      // フォールバック: クールダウンが空の場合
+      if (cooldown.length === 0) {
+        const fb = menus.filter(m => m.section === 'クールダウン');
+        if (fb.length > 0) cooldown.push(fb[0]);
+      }
+
+      // フォールバック: メインが空の場合 → 条件を緩めて再選択
+      if (main.length === 0) {
+        const fb = menus
+          .filter(m => m.section === 'メイン')
+          .sort((a, b) => scoreMenu(b, selectedGenres, allGenres, intensity, level)
+                        - scoreMenu(a, selectedGenres, allGenres, intensity, level));
+        let t = 0;
+        for (const m of fb) {
+          if (t + m.duration <= mainTarget) { main.push(m); t += m.duration; }
+        }
+      }
+
+      renderResults({ warmup, main, cooldown, duration, intensity, level });
+    }
+
+    /* ==========================================================
+       結果表示
+    ========================================================== */
+    function renderResults({ warmup, main, cooldown, duration, intensity, level }) {
+      const allSelected = [...warmup, ...main, ...cooldown];
+      const totalTime   = allSelected.reduce((s, m) => s + m.duration, 0);
+
+      // ── サマリーバー ──
+      document.getElementById('summary-bar').innerHTML = `
+        <div>
+          <div class="total-time">${totalTime}分 <span>/ ${duration}分</span></div>
+          <div class="summary-chips">
+            <span class="summary-chip">強度：${intensity}</span>
+            <span class="summary-chip">レベル：${level}</span>
+            <span class="summary-chip">全${allSelected.length}メニュー</span>
+          </div>
+        </div>
+        <div style="text-align:right; font-size:0.88rem; opacity:0.85; line-height:1.6;">
+          <div>🔥 ウォームアップ ${warmup.reduce((s,m)=>s+m.duration,0)}分</div>
+          <div>⚡ メイン ${main.reduce((s,m)=>s+m.duration,0)}分</div>
+          <div>🌙 クールダウン ${cooldown.reduce((s,m)=>s+m.duration,0)}分</div>
+        </div>
+      `;
+
+      // ── タイムライン ──
+      const tlMenus = [
+        ...warmup.map(m => ({ ...m, _sec: 'warmup' })),
+        ...main.map(m => ({ ...m, _sec: 'main' })),
+        ...cooldown.map(m => ({ ...m, _sec: 'cooldown' }))
+      ];
+
+      const DOT_COLORS = { warmup: '#f59e0b', main: '#2e7d32', cooldown: '#0891b2' };
+
+      let tlHtml  = '';
+      let elapsed = 0;
+
+      tlMenus.forEach((menu, idx) => {
+        const hh = String(Math.floor(elapsed / 60)).padStart(2, '0');
+        const mm = String(elapsed % 60).padStart(2, '0');
+        const dotColor = DOT_COLORS[menu._sec];
+        const isLast   = idx === tlMenus.length - 1;
+
+        tlHtml += `
+          <div class="timeline-row">
+            <div class="timeline-left">
+              <div class="timeline-time-label">${hh}:${mm}</div>
+              <div class="timeline-dot" style="background:${dotColor}"></div>
+              ${!isLast ? '<div class="timeline-vline"></div>' : ''}
+            </div>
+            <div class="timeline-content-row">
+              <div class="timeline-menu-name">${menu.menu_name}</div>
+              <div class="timeline-menu-sub">${menu.duration}分 ｜ ${menu.category} ｜ ${menu.intensity}強度</div>
+            </div>
+          </div>
+        `;
+        elapsed += menu.duration;
+      });
+
+      // 終了時刻
+      const endHH = String(Math.floor(elapsed / 60)).padStart(2, '0');
+      const endMM = String(elapsed % 60).padStart(2, '0');
+      tlHtml += `
+        <div class="timeline-end">
+          <div style="width:48px; text-align:center;">
+            <div class="timeline-time-label">${endHH}:${endMM}</div>
+            <div class="timeline-dot" style="background:#9ca3af; margin:0 auto;"></div>
+          </div>
+          <div class="timeline-end-label" style="color:#9ca3af;">🏁 練習終了</div>
+        </div>
+      `;
+      document.getElementById('timeline-content').innerHTML = tlHtml;
+
+      // ── メニューカード ──
+      let cardsHtml = '';
+
+      if (warmup.length > 0) {
+        cardsHtml += sectionHeader('🌅 ウォームアップ', 'warmup', warmup);
+        warmup.forEach(m => { cardsHtml += buildMenuCard(m); });
+      }
+
+      if (main.length > 0) {
+        cardsHtml += sectionHeader('⚡ メイン', 'main', main);
+        main.forEach(m => { cardsHtml += buildMenuCard(m); });
+      } else {
+        cardsHtml += `
+          <div class="empty-state">
+            <div class="icon">😅</div>
+            <p>条件に合うメインメニューが見つかりませんでした。<br>ジャンルや強度・レベルを変えてもう一度お試しください。</p>
+          </div>
+        `;
+      }
+
+      if (cooldown.length > 0) {
+        cardsHtml += sectionHeader('🌙 クールダウン', 'cooldown', cooldown);
+        cooldown.forEach(m => { cardsHtml += buildMenuCard(m); });
+      }
+
+      document.getElementById('menu-results').innerHTML = cardsHtml;
+
+      // ── カテゴリ別参考動画 ──
+      const refHtml = `
+        <div class="ref-video-title">📺 カテゴリ別参考動画プレイリスト</div>
+        <div class="ref-video-grid">
+          ${CATEGORY_VIDEOS.map(v => `
+            <a href="${v.url}" target="_blank" rel="noopener noreferrer" class="ref-video-item">
+              <span class="ref-video-item-label">${v.label}</span>
+              <span class="ref-video-item-icon">▶</span>
+            </a>
+          `).join('')}
+        </div>
+      `;
+      document.getElementById('ref-video-section').innerHTML = refHtml;
+
+      // ── 結果エリアを表示してスクロール ──
+      const rs = document.getElementById('results-section');
+      rs.classList.add('visible');
+      setTimeout(() => rs.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+    }
+
+    /** セクションヘッダーHTML */
+    function sectionHeader(label, cls, menus) {
+      const totalMin = menus.reduce((s, m) => s + m.duration, 0);
+      return `
+        <div class="section-header">
+          <span class="section-badge ${cls}">${label}</span>
+          <div class="section-line"></div>
+          <span class="section-time">計${totalMin}分</span>
+        </div>
+      `;
+    }
+
+    /** メニューカードHTML */
+    function buildMenuCard(menu) {
+      const intCls  = menu.intensity === '低' ? 'intensity-low' : menu.intensity === '中' ? 'intensity-mid' : 'intensity-high';
+      const intIcon = menu.intensity === '低' ? '🟢' : menu.intensity === '中' ? '🟡' : '🔴';
+
+      const eqHtml = (menu.equipment && menu.equipment.length > 0)
+        ? menu.equipment.map(e => `<span class="equipment-tag">📦 ${e}</span>`).join('')
+        : '<span style="color:#9ca3af;font-size:0.8rem;">道具なし</span>';
+
+      return `
+        <div class="menu-card">
+          <div class="menu-card-header">
+            <div class="menu-card-title">${menu.menu_name}</div>
+            <div class="menu-card-meta">
+              <span class="meta-tag category">${menu.category}</span>
+              <span class="meta-tag ${intCls}">${intIcon} ${menu.intensity}強度</span>
+              <span class="meta-tag level">Lv. ${menu.level}</span>
+              <span class="meta-tag duration">⏱ ${menu.duration}分</span>
+            </div>
+          </div>
+          <div class="menu-card-body">
+            <p class="menu-description">${menu.description}</p>
+            <div class="info-grid">
+              <div class="info-item">
+                <div class="label">👥 必要人数</div>
+                <div class="value">${menu.players || '指定なし'}</div>
+              </div>
+              <div class="info-item">
+                <div class="label">📂 サブカテゴリ</div>
+                <div class="value">${menu.sub_category || '—'}</div>
+              </div>
+            </div>
+            <div class="equipment-section">
+              <div class="equipment-label">🎒 必要な道具</div>
+              <div class="equipment-tags">${eqHtml}</div>
+            </div>
+            ${buildVideoSection(menu.video_url, menu.video_type, menu.id)}
+          </div>
+        </div>
+      `;
+    }
+
+    /** 動画セクションHTML */
+    function buildVideoSection(url, type, id) {
+      if (!url) {
+        return `
+          <div class="video-section">
+            <div class="video-label">🎬 練習動画</div>
+            <span style="color:#9ca3af;font-size:0.82rem;">動画未登録</span>
+          </div>
+        `;
+      }
+
+      const isPlaylist = (type === 'playlist') || url.includes('playlist');
+
+      if (isPlaylist) {
+        // プレイリストは外部リンクボタン
+        return `
+          <div class="video-section">
+            <div class="video-label">🎬 練習動画（プレイリスト）</div>
+            <a href="${url}" target="_blank" rel="noopener noreferrer" class="btn-video">
+              ▶ YouTubeで動画を見る
+            </a>
+          </div>
+        `;
+      }
+
+      // 単体動画：埋め込み（トグル式）
+      const embedUrl = toEmbedUrl(url);
+      if (!embedUrl) {
+        return `
+          <div class="video-section">
+            <div class="video-label">🎬 練習動画</div>
+            <a href="${url}" target="_blank" rel="noopener noreferrer" class="btn-video">
+              ▶ 動画を見る
+            </a>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="video-section">
+          <div class="video-label">🎬 練習動画</div>
+          <button class="toggle-video-btn" onclick="toggleVideo(${id}, this)">▶ 動画を表示する</button>
+          <div id="vid-${id}" style="display:none">
+            <div class="video-embed">
+              <iframe src="${embedUrl}" allowfullscreen loading="lazy"></iframe>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    /** YouTubeのURLを埋め込みURLに変換 */
+    function toEmbedUrl(url) {
+      if (!url) return null;
+
+      // youtu.be 短縮URL
+      const shortM = url.match(/youtu\.be\/([^?&\s]+)/);
+      if (shortM) return `https://www.youtube.com/embed/${shortM[1]}`;
+
+      // 通常URL
+      const normalM = url.match(/[?&]v=([^&\s]+)/);
+      if (normalM) return `https://www.youtube.com/embed/${normalM[1]}`;
+
+      return null;
+    }
+
+    /** 動画トグル */
+    function toggleVideo(id, btn) {
+      const el = document.getElementById('vid-' + id);
+      const shown = el.style.display !== 'none';
+      el.style.display = shown ? 'none' : 'block';
+      btn.textContent  = shown ? '▶ 動画を表示する' : '▼ 動画を隠す';
+    }
+
+    /* ==========================================================
+       管理者ログイン/ログアウト
+    ========================================================== */
+    function adminLogin() {
+      const pw = document.getElementById('admin-password').value;
+      if (pw === 'admin') {
+        isAdminLoggedIn = true;
+        document.getElementById('admin-login-section').style.display = 'none';
+        document.getElementById('admin-content').style.display = 'block';
+        renderAdminList();
+      } else {
+        alert('パスワードが正しくありません。');
+        document.getElementById('admin-password').value = '';
+      }
+    }
+
+    function adminLogout() {
+      isAdminLoggedIn = false;
+      document.getElementById('admin-login-section').style.display = 'block';
+      document.getElementById('admin-content').style.display = 'none';
+      document.getElementById('admin-password').value = '';
+    }
+
+    /* ==========================================================
+       管理者リスト描画
+    ========================================================== */
+    function renderAdminList() {
+      const q = (document.getElementById('admin-search')?.value || '').toLowerCase();
+      const filtered = menus.filter(m =>
+        m.menu_name.toLowerCase().includes(q) ||
+        m.category.toLowerCase().includes(q) ||
+        (m.sub_category || '').toLowerCase().includes(q)
+      );
+
+      if (filtered.length === 0) {
+        document.getElementById('admin-menu-list').innerHTML = `
+          <div class="empty-state">
+            <div class="icon">📭</div>
+            <p>メニューが見つかりません。</p>
+          </div>
+        `;
+        return;
+      }
+
+      const SECTION_ORDER = { 'ウォームアップ': 0, 'メイン': 1, 'クールダウン': 2 };
+      const sorted = [...filtered].sort((a, b) =>
+        (SECTION_ORDER[a.section] ?? 1) - (SECTION_ORDER[b.section] ?? 1) || a.id - b.id
+      );
+
+      let html = `<div style="font-size:0.8rem;color:#94a3b8;margin-bottom:10px;">全${filtered.length}件</div>`;
+      sorted.forEach(m => {
+        const iIcon = m.intensity === '低' ? '🟢' : m.intensity === '中' ? '🟡' : '🔴';
+        html += `
+          <div class="admin-menu-item">
+            <div class="admin-menu-info">
+              <div class="admin-menu-name">${m.menu_name}</div>
+              <div class="admin-menu-meta">
+                ${m.section} ｜ ${m.category} ｜ ${iIcon} ${m.intensity} ｜ ${m.duration}分 ｜ ${m.level}
+              </div>
+            </div>
+            <div class="admin-menu-actions">
+              <button class="btn-edit"   onclick="openEditModal(${m.id})">編集</button>
+              <button class="btn-delete" onclick="deleteMenu(${m.id})">削除</button>
+            </div>
+          </div>
+        `;
+      });
+
+      document.getElementById('admin-menu-list').innerHTML = html;
+    }
+
+    /* ==========================================================
+       モーダル 開く/閉じる
+    ========================================================== */
+    function openAddModal() {
+      editingId = null;
+      document.getElementById('modal-title').textContent = '新規メニュー追加';
+      clearForm();
+      document.getElementById('menu-modal').classList.add('visible');
+    }
+
+    function openEditModal(id) {
+      const m = menus.find(x => x.id === id);
+      if (!m) return;
+      editingId = id;
+      document.getElementById('modal-title').textContent = 'メニューを編集';
+
+      document.getElementById('f-name').value       = m.menu_name;
+      document.getElementById('f-category').value   = m.category;
+      document.getElementById('f-intensity').value  = m.intensity;
+      document.getElementById('f-duration').value   = m.duration;
+      document.getElementById('f-level').value      = m.level;
+      document.getElementById('f-section').value    = m.section;
+      document.getElementById('f-players').value    = m.players || '';
+      document.getElementById('f-subcategory').value= m.sub_category || '';
+      document.getElementById('f-description').value= m.description || '';
+      document.getElementById('f-equipment').value  = (m.equipment || []).join(', ');
+      document.getElementById('f-video-url').value  = m.video_url || '';
+      document.getElementById('f-video-type').value = m.video_type || 'single';
+
+      document.getElementById('menu-modal').classList.add('visible');
+    }
+
+    function closeModal() {
+      document.getElementById('menu-modal').classList.remove('visible');
+      editingId = null;
+    }
+
+    function clearForm() {
+      ['f-name','f-players','f-subcategory','f-description','f-equipment','f-video-url','f-duration']
+        .forEach(id => { document.getElementById(id).value = ''; });
+      document.getElementById('f-category').value   = 'アタック';
+      document.getElementById('f-intensity').value  = '中';
+      document.getElementById('f-level').value      = '中級者';
+      document.getElementById('f-section').value    = 'メイン';
+      document.getElementById('f-video-type').value = 'single';
+    }
+
+    // モーダル外クリックで閉じる
+    document.getElementById('menu-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+
+    /* ==========================================================
+       メニュー保存
+    ========================================================== */
+    function saveMenu() {
+      const name     = document.getElementById('f-name').value.trim();
+      const duration = parseInt(document.getElementById('f-duration').value);
+
+      if (!name)             { alert('メニュー名を入力してください。'); return; }
+      if (isNaN(duration) || duration < 1) { alert('時間（分）を正しく入力してください。'); return; }
+
+      const eqStr    = document.getElementById('f-equipment').value;
+      const equipment = eqStr ? eqStr.split(',').map(e => e.trim()).filter(Boolean) : [];
+
+      const data = {
+        menu_name:    name,
+        category:     document.getElementById('f-category').value,
+        sub_category: document.getElementById('f-subcategory').value.trim(),
+        intensity:    document.getElementById('f-intensity').value,
+        duration,
+        level:        document.getElementById('f-level').value,
+        section:      document.getElementById('f-section').value,
+        players:      document.getElementById('f-players').value.trim(),
+        description:  document.getElementById('f-description').value.trim(),
+        equipment,
+        video_url:    document.getElementById('f-video-url').value.trim(),
+        video_type:   document.getElementById('f-video-type').value
+      };
+
+      if (editingId !== null) {
+        const idx = menus.findIndex(m => m.id === editingId);
+        if (idx !== -1) menus[idx] = { ...menus[idx], ...data };
+      } else {
+        menus.push({ id: getNextId(), ...data });
+      }
+
+      saveMenus();
+      closeModal();
+      renderAdminList();
+      showToast(editingId ? '✓ メニューを更新しました' : '✓ メニューを追加しました');
+    }
+
+    /* ==========================================================
+       メニュー削除
+    ========================================================== */
+    function deleteMenu(id) {
+      const m = menus.find(x => x.id === id);
+      if (!m) return;
+      if (!confirm(`「${m.menu_name}」を削除しますか？\nこの操作は元に戻せません。`)) return;
+      menus = menus.filter(x => x.id !== id);
+      saveMenus();
+      renderAdminList();
+      showToast('✓ メニューを削除しました');
+    }
+
+    /* ==========================================================
+       初期データ復元
+    ========================================================== */
+    function resetToInitial() {
+      if (!confirm('すべてのメニューを初期データに戻します。よろしいですか？')) return;
+      menus = [...INITIAL_MENUS];
+      saveMenus();
+      renderAdminList();
+      showToast('✓ 初期データに復元しました');
+    }
+
+    /* ==========================================================
+       トースト通知
+    ========================================================== */
+    function showToast(msg) {
+      const prev = document.getElementById('__toast');
+      if (prev) prev.remove();
+      const el = document.createElement('div');
+      el.id = '__toast';
+      el.className = 'toast';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2800);
+    }
+
+    /* ==========================================================
+       初期化
+    ========================================================== */
+    loadMenus();
+
+  </script>
+</body>
+</html>
