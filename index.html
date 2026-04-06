@@ -356,12 +356,62 @@
       font-weight: 700;
     }
 
-    .meta-tag.category      { background: #e8f0fe; color: #1a3a5c; }
-    .meta-tag.intensity-low { background: #dcfce7; color: #166534; }
-    .meta-tag.intensity-mid { background: #fef9c3; color: #854d0e; }
-    .meta-tag.intensity-high{ background: #fee2e2; color: #991b1b; }
-    .meta-tag.level         { background: #f3e8ff; color: #6b21a8; }
-    .meta-tag.duration      { background: #e0f2fe; color: #0c4a6e; }
+    .meta-tag.category       { background: #e8f0fe; color: #1a3a5c; }
+    .meta-tag.intensity-low  { background: #dcfce7; color: #166534; }
+    .meta-tag.intensity-mid  { background: #fef9c3; color: #854d0e; }
+    .meta-tag.intensity-high { background: #fee2e2; color: #991b1b; }
+    .meta-tag.level          { background: #f3e8ff; color: #6b21a8; }
+    .meta-tag.duration       { background: #e0f2fe; color: #0c4a6e; }
+    .meta-tag.format-15      { background: #1a3a5c; color: #ffffff; }
+    .meta-tag.format-7       { background: #c2410c; color: #ffffff; }
+    .meta-tag.format-both    { background: #e2e8f0; color: #4a5568; }
+
+    /* ============================================================
+       フォーマット切り替えスイッチ
+    ============================================================ */
+    .format-switch {
+      display: flex;
+      gap: 0;
+      border-radius: 11px;
+      overflow: hidden;
+      border: 2px solid #e2e8f0;
+      margin-bottom: 22px;
+    }
+
+    .format-switch-item { display: none; }
+
+    .format-switch-label {
+      flex: 1;
+      padding: 14px 10px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-weight: 800;
+      transition: all 0.2s;
+      background: white;
+      color: #94a3b8;
+      letter-spacing: 0.3px;
+      border: none;
+      line-height: 1.3;
+    }
+
+    .format-switch-label small {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 500;
+      margin-top: 3px;
+      opacity: 0.8;
+    }
+
+    .format-switch-item:checked + .format-switch-label {
+      background: #1a3a5c;
+      color: white;
+    }
+
+    #fmt-7:checked + .format-switch-label {
+      background: #c2410c;
+      color: white;
+    }
 
     .menu-card-body { padding: 18px 20px; }
 
@@ -935,6 +985,23 @@
       <div class="card" id="input-card">
         <div class="card-title">📋 練習条件を入力</div>
 
+        <!-- フォーマット切り替え -->
+        <div class="form-group">
+          <label class="form-label">🏉 ラグビー種別</label>
+          <div class="format-switch">
+            <input type="radio" class="format-switch-item" name="format" id="fmt-15" value="15人制" checked>
+            <label class="format-switch-label" for="fmt-15">
+              15人制
+              <small>スクラム・ラインアウト・モール</small>
+            </label>
+            <input type="radio" class="format-switch-item" name="format" id="fmt-7" value="7人制">
+            <label class="format-switch-label" for="fmt-7">
+              7人制
+              <small>スペース・速攻・フィットネス</small>
+            </label>
+          </div>
+        </div>
+
         <!-- ジャンル -->
         <div class="form-group">
           <label class="form-label">スキルジャンル（複数選択可）</label>
@@ -1187,6 +1254,15 @@
         </select>
       </div>
 
+      <div class="form-group">
+        <label class="form-label">対象フォーマット *</label>
+        <select class="form-select" id="f-format">
+          <option value="両方">両方（15人制・7人制）</option>
+          <option value="15人制">15人制のみ</option>
+          <option value="7人制">7人制のみ</option>
+        </select>
+      </div>
+
       <div style="display:flex; gap:10px; margin-top:22px;">
         <button class="btn-success" onclick="saveMenu()" style="flex:1">💾 保存する</button>
         <button class="btn-secondary" onclick="closeModal()">キャンセル</button>
@@ -1207,316 +1283,278 @@
     const BRKDWN_PL  = 'https://youtube.com/playlist?list=PLz7znJaHbTxsspbNien_XvvsyB8x64BiH&si=Ors8bmf_n65pzwTg';
 
     const INITIAL_MENUS = [
-      // ── ウォームアップ ──────────────────────────────────────
+      // ── ウォームアップ（両方）────────────────────────────
       {
         id: 1,
         menu_name: 'ダイナミックウォームアップ',
-        category: 'フィジカル',
-        sub_category: 'ウォームアップ',
-        intensity: '低',
-        duration: 10,
-        level: '全レベル',
-        section: 'ウォームアップ',
+        category: 'フィジカル', sub_category: 'ウォームアップ',
+        intensity: '低', duration: 10, level: '全レベル',
+        section: 'ウォームアップ', format: '両方',
         description: 'ジョギング・スキップ・サイドステップ・ハイニー等の動的ストレッチを組み合わせたウォームアップ。怪我予防と体の覚醒が目的。全員で統一したリズムで動くことで一体感を醸成する。',
-        players: '制限なし',
-        equipment: ['コーン'],
-        video_url: ATTACK_PL,
-        video_type: 'playlist'
+        players: '制限なし', equipment: ['コーン'],
+        video_url: ATTACK_PL, video_type: 'playlist'
       },
       {
         id: 2,
         menu_name: 'ボールハンドリングウォームアップ',
-        category: 'アタック',
-        sub_category: 'ウォームアップ',
-        intensity: '低',
-        duration: 8,
-        level: '全レベル',
-        section: 'ウォームアップ',
-        description: 'ペアを組んで立った状態でボールを使った基本的なパスとキャッチを行う。手首強化と手先の感覚を高め、セッション全体に向けて集中力を整える。',
-        players: '2人〜（ペア）',
-        equipment: ['ボール'],
-        video_url: ATTACK_PL,
-        video_type: 'playlist'
+        category: 'アタック', sub_category: 'ウォームアップ',
+        intensity: '低', duration: 8, level: '全レベル',
+        section: 'ウォームアップ', format: '両方',
+        description: 'ペアを組んでボールを使った基本的なパスとキャッチを行う。手首強化と手先の感覚を高め、セッション全体に向けて集中力を整える。',
+        players: '2人〜（ペア）', equipment: ['ボール'],
+        video_url: ATTACK_PL, video_type: 'playlist'
       },
       {
         id: 3,
         menu_name: 'コンタクトウォームアップ',
-        category: 'フィジカル',
-        sub_category: 'ウォームアップ',
-        intensity: '低',
-        duration: 8,
-        level: '全レベル',
-        section: 'ウォームアップ',
+        category: 'フィジカル', sub_category: 'ウォームアップ',
+        intensity: '低', duration: 8, level: '全レベル',
+        section: 'ウォームアップ', format: '15人制',
         description: '軽いコンタクトを入れながら体を温めるウォームアップ。タックルバッグへの低強度ヒット・ショルダーチャージを丁寧に行い、コンタクトへの恐怖心を和らげる。',
-        players: '制限なし',
-        equipment: ['タックルバッグ'],
-        video_url: ATTACK_PL,
-        video_type: 'playlist'
+        players: '制限なし', equipment: ['タックルバッグ'],
+        video_url: ATTACK_PL, video_type: 'playlist'
+      },
+      {
+        id: 21,
+        menu_name: '7人制スピードウォームアップ',
+        category: 'フィジカル', sub_category: 'ウォームアップ',
+        intensity: '低', duration: 8, level: '全レベル',
+        section: 'ウォームアップ', format: '7人制',
+        description: '7人制特有の広いスペースを使ったスプリント＆ジョグを繰り返すウォームアップ。短距離の加速・減速・方向転換を組み合わせ、7人制の試合強度に体を慣らす。',
+        players: '制限なし', equipment: ['コーン', 'マーカー'],
+        video_url: ATTACK_PL, video_type: 'playlist'
       },
 
-      // ── アタック（メイン）──────────────────────────────────
+      // ── アタック（メイン）────────────────────────────────
       {
         id: 4,
         menu_name: '2対1コンビネーション',
-        category: 'アタック',
-        sub_category: 'コンビネーション',
-        intensity: '中',
-        duration: 12,
-        level: '初心者',
-        section: 'メイン',
+        category: 'アタック', sub_category: 'コンビネーション',
+        intensity: '中', duration: 12, level: '初心者',
+        section: 'メイン', format: '両方',
         description: '基本的な2対1の状況を繰り返し作り出し、パスかキャリーかを判断する練習。シンプルな形式で初心者でも取り組みやすく、決断力と視野の広さを養う。',
-        players: '6人〜',
-        equipment: ['ボール', 'コーン'],
-        video_url: ATTACK_PL,
-        video_type: 'playlist'
+        players: '6人〜', equipment: ['ボール', 'コーン'],
+        video_url: ATTACK_PL, video_type: 'playlist'
       },
       {
         id: 5,
         menu_name: '3対2パス',
-        category: 'アタック',
-        sub_category: 'パス',
-        intensity: '中',
-        duration: 15,
-        level: '中級者',
-        section: 'メイン',
+        category: 'アタック', sub_category: 'パス',
+        intensity: '中', duration: 15, level: '中級者',
+        section: 'メイン', format: '両方',
         description: '数的優位の状況で素早い判断とパス精度を高める練習。アタック側3人がディフェンス2人を突破する形式で、ボールを持たない選手のラインの取り方も同時に鍛える。',
-        players: '6〜10人',
-        equipment: ['ボール', 'コーン', 'ビブス'],
-        video_url: ATTACK_PL,
-        video_type: 'playlist'
+        players: '6〜10人', equipment: ['ボール', 'コーン', 'ビブス'],
+        video_url: ATTACK_PL, video_type: 'playlist'
       },
       {
         id: 6,
         menu_name: 'アタックパターン練習',
-        category: 'アタック',
-        sub_category: 'パターンプレー',
-        intensity: '高',
-        duration: 25,
-        level: '上級者',
-        section: 'メイン',
+        category: 'アタック', sub_category: 'パターンプレー',
+        intensity: '高', duration: 25, level: '上級者',
+        section: 'メイン', format: '15人制',
         description: 'チームのアタックパターン（セットプレー後のムーブ）を試合形式に近い状況で繰り返し練習。コールへの反応・コンビネーション・サポートランの精度を高める。',
-        players: '10〜15人',
-        equipment: ['ボール', 'コーン', 'タックルバッグ', 'ビブス'],
-        video_url: ATTACK_PL,
-        video_type: 'playlist'
+        players: '10〜15人', equipment: ['ボール', 'コーン', 'タックルバッグ', 'ビブス'],
+        video_url: ATTACK_PL, video_type: 'playlist'
       },
       {
         id: 7,
         menu_name: 'カウンターアタック練習',
-        category: 'アタック',
-        sub_category: 'カウンター',
-        intensity: '高',
-        duration: 20,
-        level: '上級者',
-        section: 'メイン',
-        description: '相手のキックやターンオーバー後の素早いカウンターアタックを実践的に練習。スピードと判断力が問われ、試合における最大のチャンスを仕留める力を養う。',
-        players: '10〜15人',
-        equipment: ['ボール', 'コーン', 'ビブス'],
-        video_url: ATTACK_PL,
-        video_type: 'playlist'
+        category: 'アタック', sub_category: 'カウンター',
+        intensity: '高', duration: 20, level: '上級者',
+        section: 'メイン', format: '7人制',
+        description: '相手のキックやターンオーバー後の素早いカウンターアタックを実践的に練習。広いスペースを使った展開力とスピードが問われる7人制の核心スキル。',
+        players: '6〜10人', equipment: ['ボール', 'コーン', 'ビブス'],
+        video_url: ATTACK_PL, video_type: 'playlist'
       },
       {
         id: 8,
         menu_name: 'ラインアウトムーブ',
-        category: 'アタック',
-        sub_category: 'セットプレー',
-        intensity: '高',
-        duration: 20,
-        level: '上級者',
-        section: 'メイン',
+        category: 'アタック', sub_category: 'セットプレー',
+        intensity: '高', duration: 20, level: '上級者',
+        section: 'メイン', format: '15人制',
         description: 'ラインアウトからの多彩なアタックムーブを実践練習。各ポジションの役割と連携・タイミングを重点的に鍛え、セットピースを得点源にする。',
-        players: '10〜15人',
-        equipment: ['ボール', 'コーン', 'ビブス'],
-        video_url: ATTACK_PL,
-        video_type: 'playlist'
+        players: '10〜15人', equipment: ['ボール', 'コーン', 'ビブス'],
+        video_url: ATTACK_PL, video_type: 'playlist'
+      },
+      {
+        id: 22,
+        menu_name: '7人制スペースアタック',
+        category: 'アタック', sub_category: 'スペースプレー',
+        intensity: '高', duration: 20, level: '中級者',
+        section: 'メイン', format: '7人制',
+        description: '7人制特有の広大なスペースを最大限に活用するアタック練習。ワイドな展開・デコイラン・ループパスを組み合わせ、ディフェンスを崩す連続攻撃を習得する。',
+        players: '7〜10人', equipment: ['ボール', 'コーン', 'ビブス'],
+        video_url: ATTACK_PL, video_type: 'playlist'
+      },
+      {
+        id: 23,
+        menu_name: 'ハンドオフ＆ステップ',
+        category: 'アタック', sub_category: '個人スキル',
+        intensity: '中', duration: 12, level: '中級者',
+        section: 'メイン', format: '7人制',
+        description: '7人制で多用するハンドオフ・インステップ・アウトステップを反復練習。1対1の局面を突破する個人スキルを磨き、少人数で生み出すチャンスを確実にものにする。',
+        players: '4〜8人', equipment: ['ボール', 'コーン', 'マーカー'],
+        video_url: ATTACK_PL, video_type: 'playlist'
       },
 
-      // ── ディフェンス（メイン）────────────────────────────
+      // ── ディフェンス（メイン）───────────────────────────
       {
         id: 9,
         menu_name: 'タックル基礎練習',
-        category: 'ディフェンス',
-        sub_category: 'タックル',
-        intensity: '中',
-        duration: 15,
-        level: '初心者',
-        section: 'メイン',
+        category: 'ディフェンス', sub_category: 'タックル',
+        intensity: '中', duration: 15, level: '初心者',
+        section: 'メイン', format: '両方',
         description: '安全なタックルフォームを段階的に習得する練習。静止した状態から始め、徐々に動く相手へと難易度を上げ、正しい姿勢・アプローチ・ヒットを身体で覚える。',
-        players: '2人〜（ペア）',
-        equipment: ['タックルバッグ', 'マーカー'],
-        video_url: ATTACK_PL,
-        video_type: 'playlist'
+        players: '2人〜（ペア）', equipment: ['タックルバッグ', 'マーカー'],
+        video_url: ATTACK_PL, video_type: 'playlist'
       },
       {
         id: 10,
         menu_name: 'ポジショニング確認',
-        category: 'ディフェンス',
-        sub_category: 'ポジショニング',
-        intensity: '低',
-        duration: 12,
-        level: '初心者',
-        section: 'メイン',
+        category: 'ディフェンス', sub_category: 'ポジショニング',
+        intensity: '低', duration: 12, level: '初心者',
+        section: 'メイン', format: '15人制',
         description: 'ディフェンスの基本的なポジショニングをウォーキングペースで確認する練習。コーチの声がけを交えながら理解を深め、全員の意識を統一する。',
-        players: '6人〜',
-        equipment: ['コーン', 'マーカー'],
-        video_url: ATTACK_PL,
-        video_type: 'playlist'
+        players: '6人〜', equipment: ['コーン', 'マーカー'],
+        video_url: ATTACK_PL, video_type: 'playlist'
       },
       {
         id: 11,
         menu_name: 'ラインスピードディフェンス',
-        category: 'ディフェンス',
-        sub_category: 'ラインディフェンス',
-        intensity: '高',
-        duration: 20,
-        level: '中級者',
-        section: 'メイン',
-        description: 'ディフェンスラインの上がりスピードと間隔の維持を重点的に練習。コミュニケーションと連動したリードにより、相手アタックを圧迫するアグレッシブなディフェンスを構築する。',
-        players: '8〜12人',
-        equipment: ['ボール', 'コーン', 'ビブス'],
-        video_url: ATTACK_PL,
-        video_type: 'playlist'
+        category: 'ディフェンス', sub_category: 'ラインディフェンス',
+        intensity: '高', duration: 20, level: '中級者',
+        section: 'メイン', format: '7人制',
+        description: '7人制に特化したラインスピード練習。広いフィールドで少人数がカバーするため、上がりのスピードと間隔維持がより重要。コミュニケーションを徹底して相手を圧迫する。',
+        players: '6〜8人', equipment: ['ボール', 'コーン', 'ビブス'],
+        video_url: ATTACK_PL, video_type: 'playlist'
+      },
+      {
+        id: 11.5,
+        menu_name: 'ディフェンスライン整備',
+        category: 'ディフェンス', sub_category: 'ラインディフェンス',
+        intensity: '中', duration: 18, level: '中級者',
+        section: 'メイン', format: '15人制',
+        description: '15人制のディフェンスラインの形成・上がり・間隔維持を重点的に練習。フォワードとバックスの連動、コールのタイミングを統一し、組織的なラインを構築する。',
+        players: '10〜15人', equipment: ['ボール', 'コーン', 'ビブス'],
+        video_url: ATTACK_PL, video_type: 'playlist'
       },
       {
         id: 12,
         menu_name: 'チームディフェンスシステム',
-        category: 'ディフェンス',
-        sub_category: 'システム',
-        intensity: '高',
-        duration: 25,
-        level: '上級者',
-        section: 'メイン',
+        category: 'ディフェンス', sub_category: 'システム',
+        intensity: '高', duration: 25, level: '上級者',
+        section: 'メイン', format: '15人制',
         description: 'チーム全体のディフェンスシステム（ブリッツ/フラット/ドリフト）を状況に応じて切り替える高度な練習。コールと判断の精度を上げ、組織的なディフェンスを完成させる。',
-        players: '10〜15人',
-        equipment: ['ボール', 'コーン', 'ビブス'],
-        video_url: ATTACK_PL,
-        video_type: 'playlist'
+        players: '10〜15人', equipment: ['ボール', 'コーン', 'ビブス'],
+        video_url: ATTACK_PL, video_type: 'playlist'
+      },
+      {
+        id: 24,
+        menu_name: '7人制インターセプト＆カバー',
+        category: 'ディフェンス', sub_category: 'カバーディフェンス',
+        intensity: '高', duration: 15, level: '中級者',
+        section: 'メイン', format: '7人制',
+        description: '7人制特有の広大なスペースでのカバーディフェンスを練習。インターセプトのタイミングと逆サイドへのカバーランを同時に鍛え、少人数で広いエリアを守る技術を習得する。',
+        players: '6〜8人', equipment: ['ボール', 'コーン', 'ビブス'],
+        video_url: ATTACK_PL, video_type: 'playlist'
       },
 
-      // ── プレイブレイクダウン（メイン）───────────────────
+      // ── プレイブレイクダウン（メイン）──────────────────
       {
         id: 13,
         menu_name: 'ブレイクダウン基礎',
-        category: 'プレイブレイクダウン',
-        sub_category: '基礎',
-        intensity: '中',
-        duration: 15,
-        level: '初心者',
-        section: 'メイン',
+        category: 'プレイブレイクダウン', sub_category: '基礎',
+        intensity: '中', duration: 15, level: '初心者',
+        section: 'メイン', format: '両方',
         description: 'コンタクト後のブレイクダウンの基本を学ぶ練習。正しい倒れ方・ボールの置き方・サポートの入り方を段階的に習得し、ラックの優位性を確立する土台を作る。',
-        players: '4〜6人',
-        equipment: ['ボール', 'タックルバッグ'],
-        video_url: BRKDWN_PL,
-        video_type: 'playlist'
+        players: '4〜6人', equipment: ['ボール', 'タックルバッグ'],
+        video_url: BRKDWN_PL, video_type: 'playlist'
       },
       {
         id: 14,
         menu_name: 'ラック形成練習',
-        category: 'プレイブレイクダウン',
-        sub_category: 'ラック',
-        intensity: '中',
-        duration: 15,
-        level: '中級者',
-        section: 'メイン',
-        description: 'コンタクト後のラック形成を素早く行う練習。キャリアーのボールポジションとサポートの寄りの速度を重点的に鍛える。チームのブレイクダウンスピードを劇的に改善する。',
-        players: '6〜10人',
-        equipment: ['ボール', 'コーン', 'タックルバッグ'],
-        video_url: BRKDWN_PL,
-        video_type: 'playlist'
+        category: 'プレイブレイクダウン', sub_category: 'ラック',
+        intensity: '中', duration: 15, level: '中級者',
+        section: 'メイン', format: '15人制',
+        description: 'コンタクト後のラック形成を素早く行う練習。キャリアーのボールポジションとサポートの寄りの速度を重点的に鍛え、チームのブレイクダウンスピードを改善する。',
+        players: '6〜10人', equipment: ['ボール', 'コーン', 'タックルバッグ'],
+        video_url: BRKDWN_PL, video_type: 'playlist'
       },
       {
         id: 15,
         menu_name: 'モールドライブ練習',
-        category: 'プレイブレイクダウン',
-        sub_category: 'モール',
-        intensity: '高',
-        duration: 18,
-        level: '中級者',
-        section: 'メイン',
+        category: 'プレイブレイクダウン', sub_category: 'モール',
+        intensity: '高', duration: 18, level: '中級者',
+        section: 'メイン', format: '15人制',
         description: 'モール形成からのドライブを集中的に練習。体の低さ・結合力・ドライブ方向の統一を全員が意識し、ゴール前での強力な攻撃オプションを身につける。',
-        players: '8人〜',
-        equipment: ['ボール', 'タックルバッグ'],
-        video_url: BRKDWN_PL,
-        video_type: 'playlist'
+        players: '8人〜', equipment: ['ボール', 'タックルバッグ'],
+        video_url: BRKDWN_PL, video_type: 'playlist'
       },
       {
         id: 16,
         menu_name: 'スクラム基礎練習',
-        category: 'プレイブレイクダウン',
-        sub_category: 'スクラム',
-        intensity: '高',
-        duration: 20,
-        level: '中級者',
-        section: 'メイン',
+        category: 'プレイブレイクダウン', sub_category: 'スクラム',
+        intensity: '高', duration: 20, level: '中級者',
+        section: 'メイン', format: '15人制',
         description: 'スクラムのバインディングとヒットの基礎を反復練習。フロントロー中心にパック全体の連携とドライブ力を向上させ、セットプレーの安定性を高める。',
-        players: '8人〜',
-        equipment: ['スクラムマシン'],
-        video_url: BRKDWN_PL,
-        video_type: 'playlist'
+        players: '8人〜', equipment: ['スクラムマシン'],
+        video_url: BRKDWN_PL, video_type: 'playlist'
       },
       {
         id: 17,
         menu_name: 'ジャッカル対策練習',
-        category: 'プレイブレイクダウン',
-        sub_category: 'ジャッカル',
-        intensity: '高',
-        duration: 18,
-        level: '上級者',
-        section: 'メイン',
+        category: 'プレイブレイクダウン', sub_category: 'ジャッカル',
+        intensity: '高', duration: 18, level: '上級者',
+        section: 'メイン', format: '両方',
         description: 'ジャッカルの仕掛けと対策を攻守両面から練習。ボールキャリアーのセキュリティとジャッカラーのタイミング・姿勢を高強度で競い合う。',
-        players: '4〜8人',
-        equipment: ['ボール', 'タックルバッグ', 'マーカー'],
-        video_url: BRKDWN_PL,
-        video_type: 'playlist'
+        players: '4〜8人', equipment: ['ボール', 'タックルバッグ', 'マーカー'],
+        video_url: BRKDWN_PL, video_type: 'playlist'
       },
 
-      // ── キック（メイン）──────────────────────────────────
+      // ── キック（メイン）─────────────────────────────────
       {
         id: 18,
         menu_name: 'キックチェイス練習',
-        category: 'キック',
-        sub_category: 'キッキングゲーム',
-        intensity: '中',
-        duration: 15,
-        level: '中級者',
-        section: 'メイン',
+        category: 'キック', sub_category: 'キッキングゲーム',
+        intensity: '中', duration: 15, level: '中級者',
+        section: 'メイン', format: '両方',
         description: '蹴り手と追走者の連携を高める練習。キックの精度とチェイスのタイミング・ポジションを同時に練習し、試合で有効なキッキングゲームを構築する。',
-        players: '6〜10人',
-        equipment: ['ボール', 'コーン'],
-        video_url: ATTACK_PL,
-        video_type: 'playlist'
+        players: '6〜10人', equipment: ['ボール', 'コーン'],
+        video_url: ATTACK_PL, video_type: 'playlist'
       },
 
-      // ── クールダウン ──────────────────────────────────────
+      // ── フィジカル・フィットネス（7人制メイン）──────────
+      {
+        id: 25,
+        menu_name: '7人制インターバルフィットネス',
+        category: 'フィジカル', sub_category: 'フィットネス',
+        intensity: '高', duration: 15, level: '中級者',
+        section: 'メイン', format: '7人制',
+        description: '7人制の試合は前後半各7分の高強度が続く。試合強度を再現したインターバルトレーニング（スプリント30秒＋軽ジョグ30秒×10セット）でスタミナと回復力を鍛える。',
+        players: '制限なし', equipment: ['コーン'],
+        video_url: ATTACK_PL, video_type: 'playlist'
+      },
+
+      // ── クールダウン（両方）──────────────────────────────
       {
         id: 19,
         menu_name: 'スタティックストレッチ',
-        category: 'フィジカル',
-        sub_category: 'クールダウン',
-        intensity: '低',
-        duration: 10,
-        level: '全レベル',
-        section: 'クールダウン',
+        category: 'フィジカル', sub_category: 'クールダウン',
+        intensity: '低', duration: 10, level: '全レベル',
+        section: 'クールダウン', format: '両方',
         description: '練習後の疲労回復のための静的ストレッチ。全身の主要筋群（大腿四頭筋・ハムストリング・股関節・肩・首）を丁寧にほぐし、翌日のコンディションを整える。',
-        players: '制限なし',
-        equipment: [],
-        video_url: '',
-        video_type: 'single'
+        players: '制限なし', equipment: [],
+        video_url: '', video_type: 'single'
       },
       {
         id: 20,
         menu_name: 'チームミーティング＆振り返り',
-        category: 'フィジカル',
-        sub_category: 'クールダウン',
-        intensity: '低',
-        duration: 8,
-        level: '全レベル',
-        section: 'クールダウン',
+        category: 'フィジカル', sub_category: 'クールダウン',
+        intensity: '低', duration: 8, level: '全レベル',
+        section: 'クールダウン', format: '両方',
         description: '練習の振り返りと良かった点・改善点を全員で共有する。選手が発言しやすい雰囲気で進め、次回の練習への意欲を高める。チームの団結力向上にも繋がる。',
-        players: '制限なし',
-        equipment: [],
-        video_url: '',
-        video_type: 'single'
+        players: '制限なし', equipment: [],
+        video_url: '', video_type: 'single'
       }
     ];
 
@@ -1539,7 +1577,7 @@
     /** LocalStorage からデータ読み込み */
     function loadMenus() {
       try {
-        const saved = localStorage.getItem('rugby_menus_v2');
+        const saved = localStorage.getItem('rugby_menus_v3');
         menus = saved ? JSON.parse(saved) : [...INITIAL_MENUS];
       } catch(e) {
         menus = [...INITIAL_MENUS];
@@ -1548,7 +1586,7 @@
 
     /** LocalStorage に保存 */
     function saveMenus() {
-      localStorage.setItem('rugby_menus_v2', JSON.stringify(menus));
+      localStorage.setItem('rugby_menus_v3', JSON.stringify(menus));
     }
 
     /** 次のIDを取得 */
@@ -1627,6 +1665,7 @@
       const intensity = document.querySelector('input[name="intensity"]:checked')?.value || '中';
       const duration  = parseInt(document.querySelector('input[name="duration"]:checked')?.value || '60');
       const level     = document.querySelector('input[name="level"]:checked')?.value || '中級者';
+      const format    = document.querySelector('input[name="format"]:checked')?.value || '15人制';
 
       // バリデーション
       if (!allGenres && selectedGenres.length === 0) {
@@ -1639,10 +1678,15 @@
       const cooldownTarget = Math.round(duration * 0.12);
       const mainTarget     = duration - warmupTarget - cooldownTarget;
 
+      // ── フォーマットフィルター（選択した種別 or 両方のみ通す）──
+      function matchesFormat(menu) {
+        return menu.format === '両方' || menu.format === format || !menu.format;
+      }
+
       // ── セクション別メニュー選択 ──
       function selectSection(sectionName, timeLimit) {
         const pool = menus
-          .filter(m => m.section === sectionName)
+          .filter(m => m.section === sectionName && matchesFormat(m))
           .map(m => ({ ...m, _score: scoreMenu(m, selectedGenres, allGenres, intensity, level) }))
           .sort((a, b) => b._score - a._score);
 
@@ -1669,7 +1713,7 @@
       let main     = selectSection('メイン', mainTarget);
       let cooldown = selectSection('クールダウン', cooldownTarget);
 
-      // フォールバック: ウォームアップが空の場合
+      // フォールバック: ウォームアップが空の場合（フォーマット問わず）
       if (warmup.length === 0) {
         const fb = menus.filter(m => m.section === 'ウォームアップ');
         if (fb.length > 0) warmup.push(fb[0]);
@@ -1681,10 +1725,10 @@
         if (fb.length > 0) cooldown.push(fb[0]);
       }
 
-      // フォールバック: メインが空の場合 → 条件を緩めて再選択
+      // フォールバック: メインが空の場合 → フォーマット条件を緩めて再選択
       if (main.length === 0) {
         const fb = menus
-          .filter(m => m.section === 'メイン')
+          .filter(m => m.section === 'メイン' && matchesFormat(m))
           .sort((a, b) => scoreMenu(b, selectedGenres, allGenres, intensity, level)
                         - scoreMenu(a, selectedGenres, allGenres, intensity, level));
         let t = 0;
@@ -1693,21 +1737,23 @@
         }
       }
 
-      renderResults({ warmup, main, cooldown, duration, intensity, level });
+      renderResults({ warmup, main, cooldown, duration, intensity, level, format });
     }
 
     /* ==========================================================
        結果表示
     ========================================================== */
-    function renderResults({ warmup, main, cooldown, duration, intensity, level }) {
+    function renderResults({ warmup, main, cooldown, duration, intensity, level, format }) {
       const allSelected = [...warmup, ...main, ...cooldown];
       const totalTime   = allSelected.reduce((s, m) => s + m.duration, 0);
+      const fmtLabel    = format === '7人制' ? '🟠 7人制' : '🔵 15人制';
 
       // ── サマリーバー ──
       document.getElementById('summary-bar').innerHTML = `
         <div>
           <div class="total-time">${totalTime}分 <span>/ ${duration}分</span></div>
           <div class="summary-chips">
+            <span class="summary-chip">${fmtLabel}</span>
             <span class="summary-chip">強度：${intensity}</span>
             <span class="summary-chip">レベル：${level}</span>
             <span class="summary-chip">全${allSelected.length}メニュー</span>
@@ -1832,6 +1878,10 @@
       const intCls  = menu.intensity === '低' ? 'intensity-low' : menu.intensity === '中' ? 'intensity-mid' : 'intensity-high';
       const intIcon = menu.intensity === '低' ? '🟢' : menu.intensity === '中' ? '🟡' : '🔴';
 
+      const fmt = menu.format || '両方';
+      const fmtCls  = fmt === '15人制' ? 'format-15' : fmt === '7人制' ? 'format-7' : 'format-both';
+      const fmtText = fmt === '15人制' ? '🔵 15人制' : fmt === '7人制' ? '🟠 7人制' : '両方';
+
       const eqHtml = (menu.equipment && menu.equipment.length > 0)
         ? menu.equipment.map(e => `<span class="equipment-tag">📦 ${e}</span>`).join('')
         : '<span style="color:#9ca3af;font-size:0.8rem;">道具なし</span>';
@@ -1841,6 +1891,7 @@
           <div class="menu-card-header">
             <div class="menu-card-title">${menu.menu_name}</div>
             <div class="menu-card-meta">
+              <span class="meta-tag ${fmtCls}">${fmtText}</span>
               <span class="meta-tag category">${menu.category}</span>
               <span class="meta-tag ${intCls}">${intIcon} ${menu.intensity}強度</span>
               <span class="meta-tag level">Lv. ${menu.level}</span>
@@ -1995,12 +2046,14 @@
       let html = `<div style="font-size:0.8rem;color:#94a3b8;margin-bottom:10px;">全${filtered.length}件</div>`;
       sorted.forEach(m => {
         const iIcon = m.intensity === '低' ? '🟢' : m.intensity === '中' ? '🟡' : '🔴';
+        const fmt   = m.format || '両方';
+        const fmtIcon = fmt === '15人制' ? '🔵' : fmt === '7人制' ? '🟠' : '⚪';
         html += `
           <div class="admin-menu-item">
             <div class="admin-menu-info">
               <div class="admin-menu-name">${m.menu_name}</div>
               <div class="admin-menu-meta">
-                ${m.section} ｜ ${m.category} ｜ ${iIcon} ${m.intensity} ｜ ${m.duration}分 ｜ ${m.level}
+                ${fmtIcon} ${fmt} ｜ ${m.section} ｜ ${m.category} ｜ ${iIcon} ${m.intensity} ｜ ${m.duration}分 ｜ ${m.level}
               </div>
             </div>
             <div class="admin-menu-actions">
@@ -2042,6 +2095,7 @@
       document.getElementById('f-equipment').value  = (m.equipment || []).join(', ');
       document.getElementById('f-video-url').value  = m.video_url || '';
       document.getElementById('f-video-type').value = m.video_type || 'single';
+      document.getElementById('f-format').value     = m.format || '両方';
 
       document.getElementById('menu-modal').classList.add('visible');
     }
@@ -2059,6 +2113,7 @@
       document.getElementById('f-level').value      = '中級者';
       document.getElementById('f-section').value    = 'メイン';
       document.getElementById('f-video-type').value = 'single';
+      document.getElementById('f-format').value     = '両方';
     }
 
     // モーダル外クリックで閉じる
@@ -2087,6 +2142,7 @@
         duration,
         level:        document.getElementById('f-level').value,
         section:      document.getElementById('f-section').value,
+        format:       document.getElementById('f-format').value,
         players:      document.getElementById('f-players').value.trim(),
         description:  document.getElementById('f-description').value.trim(),
         equipment,
